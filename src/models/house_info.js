@@ -9,10 +9,9 @@ module.exports = (sequelize, DataTypes) => {
          * This method is not a part of Sequelize lifecycle.
          * The `models/index` file will call this method automatically.
          */
-        // static associate(models) {
-        //     District.belongsTo(models.Province, { foreignKey: 'provinceCode', targetKey: 'code', as: 'provinceCodeData' })
-        //     District.hasMany(models.House, { foreignKey: 'districtCode', as: 'districtData' })
-        // }
+        static associate(models) {
+            House_Info.belongsTo(models.House, { foreignKey: 'houseId' })
+        }
     };
     House_Info.init({
         houseId: DataTypes.INTEGER,
@@ -21,9 +20,10 @@ module.exports = (sequelize, DataTypes) => {
         descriptionMarkDown: DataTypes.TEXT('long'),
         address: DataTypes.STRING,
         location: DataTypes.GEOMETRY('POINT'),
-        price: DataTypes.INTEGER,
         maxGuests: DataTypes.INTEGER,
         allowAnimals: DataTypes.BOOLEAN,
+        countBed: DataTypes.INTEGER,
+        countBathRoom: DataTypes.INTEGER,
     }, {
         sequelize,
         modelName: 'House_Info',

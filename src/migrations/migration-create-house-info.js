@@ -2,7 +2,7 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable('House_Info', {
+        await queryInterface.createTable('House_Infos', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
@@ -29,12 +29,7 @@ module.exports = {
                 type: Sequelize.STRING
             },
             location: {
-                allowNull: false,
                 type: Sequelize.GEOMETRY('POINT')
-            },
-            price: {
-                allowNull: false,
-                type: Sequelize.INTEGER
             },
             maxGuests: {
                 type: Sequelize.INTEGER
@@ -42,6 +37,12 @@ module.exports = {
             allowAnimals: {
                 type: Sequelize.BOOLEAN,
                 defaultValue: false
+            },
+            countBed: {
+                type: Sequelize.INTEGER
+            },
+            countBathRoom: {
+                type: Sequelize.INTEGER
             },
             createdAt: {
                 allowNull: false,
@@ -54,6 +55,6 @@ module.exports = {
         });
     },
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable('House_Info');
+        await queryInterface.dropTable('House_Infos');
     }
 };

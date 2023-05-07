@@ -9,10 +9,10 @@ module.exports = (sequelize, DataTypes) => {
          * This method is not a part of Sequelize lifecycle.
          * The `models/index` file will call this method automatically.
          */
-        // static associate(models) {
-        //     District.belongsTo(models.Province, { foreignKey: 'provinceCode', targetKey: 'code', as: 'provinceCodeData' })
-        //     District.hasMany(models.House, { foreignKey: 'districtCode', as: 'districtData' })
-        // }
+        static associate(models) {
+            House_Convenient.belongsTo(models.House, { foreignKey: 'houseId', targetKey: 'id', as: 'houseConvenientIdData' })
+            House_Convenient.belongsTo(models.Convenient, { foreignKey: 'convenientId', targetKey: 'id', as: 'convenientData' })
+        }
     };
     House_Convenient.init({
         houseId: DataTypes.INTEGER,

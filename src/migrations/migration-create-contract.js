@@ -2,7 +2,7 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable('Contract', {
+        await queryInterface.createTable('Contracts', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
@@ -12,6 +12,9 @@ module.exports = {
             customerId: {
                 type: Sequelize.INTEGER
             },
+            houseId: {
+                type: Sequelize.INTEGER
+            },
             arriveDate: {
                 allowNull: false,
                 type: Sequelize.DATE
@@ -19,10 +22,6 @@ module.exports = {
             leftDate: {
                 allowNull: false,
                 type: Sequelize.DATE
-            },
-            infoGuestId: {
-                allowNull: false,
-                type: Sequelize.INTEGER
             },
             price: {
                 allowNull: false,
@@ -39,6 +38,6 @@ module.exports = {
         });
     },
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable('Contract');
+        await queryInterface.dropTable('Contracts');
     }
 };

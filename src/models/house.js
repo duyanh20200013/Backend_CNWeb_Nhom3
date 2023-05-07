@@ -12,7 +12,11 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             House.belongsTo(models.District, { foreignKey: 'districtCode', targetKey: 'code', as: 'districtData' })
             House.belongsTo(models.Province, { foreignKey: 'provinceCode', targetKey: 'code', as: 'provinceData' })
-            //House.hasMany(models.Province, { foreignKey: 'provinceId', targetKey: 'id', as: 'provinceData' })
+            House.belongsTo(models.User, { foreignKey: 'ownerId', targetKey: 'id', as: 'ownerData' })
+            House.hasMany(models.House_Image, { foreignKey: 'houseId', as: 'houseImageIdData' })
+            House.hasMany(models.House_Type, { foreignKey: 'houseId', as: 'houseTypeIdData' })
+            House.hasMany(models.House_Convenient, { foreignKey: 'houseId', as: 'houseConvenientIdData' })
+            House.hasOne(models.House_Info, { foreignKey: 'houseId' })
         }
     };
     House.init({
@@ -22,6 +26,9 @@ module.exports = (sequelize, DataTypes) => {
         status: DataTypes.STRING,
         name: DataTypes.STRING,
         title: DataTypes.STRING,
+        price: DataTypes.INTEGER,
+        star: DataTypes.FLOAT,
+        countReview: DataTypes.INTEGER,
     }, {
         sequelize,
         modelName: 'House',

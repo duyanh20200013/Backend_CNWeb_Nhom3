@@ -16,9 +16,9 @@ module.exports = (sequelize, DataTypes) => {
     };
     Contract.init({
         customerId: DataTypes.INTEGER,
+        houseId: DataTypes.INTEGER,
         arriveDate: DataTypes.DATE,
         leftDate: DataTypes.DATE,
-        infoGuestId: DataTypes.INTEGER,
         price: DataTypes.INTEGER,
     }, {
         sequelize,

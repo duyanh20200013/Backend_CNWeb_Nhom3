@@ -9,11 +9,9 @@ module.exports = (sequelize, DataTypes) => {
          * This method is not a part of Sequelize lifecycle.
          * The `models/index` file will call this method automatically.
          */
-        // static associate(models) {
-        //     Convenient.hasMany(models.User, { foreignKey: 'positionId', as: 'positionData' })
-        //     Convenient.hasMany(models.User, { foreignKey: 'gender', as: 'genderData' })
-        //     Convenient.hasMany(models.Schedule, { foreignKey: 'timeType', as: 'timeTypeData' })
-        // }
+        static associate(models) {
+            Convenient.hasMany(models.House_Convenient, { foreignKey: 'convenientId', as: 'convenientData' })
+        }
     };
     Convenient.init({
         typeConvenient: DataTypes.STRING,
