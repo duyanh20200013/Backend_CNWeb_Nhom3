@@ -60,7 +60,11 @@ let getAllHouseOfType = (typeId) => {
 let getAllConvenients = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            let convenients = await db.Type.Convenient()
+            let convenients = await db.Convenient.findAll({
+                attributes: {
+                    exclude: ['createdAt', 'updatedAt'],
+                },
+            })
             resolve({
                 errCode: 0,
                 data: convenients
@@ -146,6 +150,65 @@ let getDetailHouseById = (inputId) => {
                 data: data,
                 dataType: dataType,
                 dataConvenient: dataConvenient
+            })
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let createHouse = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let newHouse = await db.House.create({
+                provinceCode: data.provinceCode,
+                districtCode: data.districtCode,
+                ownerId: data.ownerId,
+                status: 'Trống',
+                name: data.name,
+                title: data.title,
+                price: data.price,
+                star: data.star,
+                countReview: data.countReview
+            })
+            let houseId = newHouse.id;
+
+            await db.House_Info.create({
+                houseId: houseId,
+                kindOfHouse: data.House_Info.kindOfHouse,
+                descriptionHTML: data.House_Info.descriptionHTML,
+                descriptionMarkDown: data.House_Info.descriptionMarkDown,
+                address: data.House_Info.address,
+                location: data.House_Info.location,
+                maxGuests: data.House_Info.maxGuests,
+                allowAnimals: data.House_Info.allowAnimals,
+                countBed: data.House_Info.countBed,
+                countBathRoom: data.House_Info.countBathRoom,
+            })
+            let imageArray = data.House_Image
+            for (var item = 0; item < imageArray.length; item++) {
+                await db.House_Image.create({
+                    houseId: houseId,
+                    url: item.url
+                })
+            }
+            let typeArray = data.House_Type
+            for (var item = 0; item < typeArray.length; item++) {
+                await db.House_Type.create({
+                    houseId: houseId,
+                    typeId: item.typeId
+                })
+            }
+            let convenientArray = data.House_Convenient
+            for (var item = 0; item < convenientArray.length; item++) {
+                await db.House_Convenient.create({
+                    houseId: houseId,
+                    url: item.convenientId
+                })
+            }
+            resolve({
+                errCode: 0,
+                message: 'Create House Successfully!'
             })
         } catch (e) {
             reject(e);
