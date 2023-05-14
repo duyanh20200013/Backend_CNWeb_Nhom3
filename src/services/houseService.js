@@ -18,6 +18,7 @@ let getAllHouseOfType = (typeId) => {
     return new Promise(async (resolve, reject) => {
         try {
             let HouseList = await db.House.findAll({
+                where: { status: 'Active' },
                 attributes: {
                     exclude: ['provinceCode', 'districtCode'],
                 },
@@ -132,7 +133,7 @@ let getDetailHouseById = (inputId) => {
                     {
                         model: db.User,
                         as: 'ownerData',
-                        attributes: ['firstName', 'lastName', 'phone', 'image']
+                        attributes: ['firstName', 'lastName', 'phone', 'address', 'image']
                     },
                 ],
                 raw: false,
@@ -164,12 +165,12 @@ let createHouse = (data) => {
                 provinceCode: data.provinceCode,
                 districtCode: data.districtCode,
                 ownerId: data.ownerId,
-                status: 'Trống',
+                status: 'Wait Cofirm Create',
                 name: data.name,
                 title: data.title,
                 price: data.price,
-                star: data.star,
-                countReview: data.countReview
+                star: 5.0,
+                countReview: 0
             })
             let houseId = newHouse.id;
 
@@ -179,6 +180,7 @@ let createHouse = (data) => {
                 descriptionHTML: data.House_Info.descriptionHTML,
                 descriptionMarkDown: data.House_Info.descriptionMarkDown,
                 address: data.House_Info.address,
+                addressDescription: data.House_Info.addressDescription,
                 location: data.House_Info.location,
                 maxGuests: data.House_Info.maxGuests,
                 allowAnimals: data.House_Info.allowAnimals,
@@ -186,24 +188,24 @@ let createHouse = (data) => {
                 countBathRoom: data.House_Info.countBathRoom,
             })
             let imageArray = data.House_Image
-            for (var item = 0; item < imageArray.length; item++) {
+            for (var index = 0; index < imageArray.length; index++) {
                 await db.House_Image.create({
                     houseId: houseId,
-                    url: item.url
+                    url: imageArray[index].url
                 })
             }
-            let typeArray = data.House_Type
-            for (var item = 0; item < typeArray.length; item++) {
+            let typeIdArray = data.House_Type
+            for (var index = 0; index < typeIdArray.length; index++) {
                 await db.House_Type.create({
                     houseId: houseId,
-                    typeId: item.typeId
+                    typeId: typeIdArray[index]
                 })
             }
-            let convenientArray = data.House_Convenient
-            for (var item = 0; item < convenientArray.length; item++) {
+            let convenientIdArray = data.House_Convenient
+            for (var index = 0; index < convenientIdArray.length; index++) {
                 await db.House_Convenient.create({
                     houseId: houseId,
-                    url: item.convenientId
+                    convenientId: convenientIdArray[index]
                 })
             }
             resolve({
@@ -216,9 +218,157 @@ let createHouse = (data) => {
     })
 }
 
+let deleteHouse = (houseId, userId, userRole) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let house = await db.House.findOne({
+                where: { id: houseId }
+            })
+            if (!house) {
+                resolve({
+                    errCode: 1,
+                    errMessage: `The house isn't exist`
+                })
+            } else {
+                if (userRole === 'Owner' && userId !== house.ownerId) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: `The user is not owner of house`
+                    })
+                } else {
+                    await db.House.destroy({
+                        where: { id: houseId }
+                    })
+                    await db.House_Info.destroy({
+                        where: { houseId: houseId }
+                    })
+                    await db.House_Type.destroy({
+                        where: { houseId: houseId }
+                    })
+                    await db.House_Convenient.destroy({
+                        where: { houseId: houseId }
+                    })
+                    await db.House_Image.destroy({
+                        where: { houseId: houseId }
+                    })
+                    await db.Update_House.destroy({
+                        where: { houseIdUpdate: houseId }
+                    })
+                    // Hoàn thiện khi viết xong con review
+
+                    // await db.Review.destroy({
+                    //     where: { houseId: houseId }
+                    // })
+                    resolve({
+                        errCode: 0,
+                        errMessage: `Delete Successfully`
+                    })
+                }
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let updateHouse = (houseId, userId, data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let house = await db.House.findOne({
+                where: { id: houseId },
+                raw: false
+            })
+            if (!house) {
+                resolve({
+                    errCode: 1,
+                    errMessage: `House not found!`
+                })
+            } else {
+                if (house.ownerId !== userId) {
+                    resolve({
+                        errCode: 2,
+                        errMessage: `User is not owner house`
+                    })
+                } else {
+                    let newHouseUpdate = await db.House.create({
+                        provinceCode: data.provinceCode,
+                        districtCode: data.districtCode,
+                        ownerId: house.ownerId,
+                        status: 'Wait Cofirm Update',
+                        name: data.name,
+                        title: data.title,
+                        price: data.price,
+                        star: house.star,
+                        countReview: house.countReview
+                    })
+
+                    let houseIdUpdate = newHouseUpdate.id
+                    await db.House_Info.create({
+                        houseId: houseIdUpdate,
+                        kindOfHouse: data.House_Info.kindOfHouse,
+                        descriptionHTML: data.House_Info.descriptionHTML,
+                        descriptionMarkDown: data.House_Info.descriptionMarkDown,
+                        address: data.House_Info.address,
+                        addressDescription: data.House_Info.addressDescription,
+                        location: data.House_Info.location,
+                        maxGuests: data.House_Info.maxGuests,
+                        allowAnimals: data.House_Info.allowAnimals,
+                        countBed: data.House_Info.countBed,
+                        countBathRoom: data.House_Info.countBathRoom,
+                    })
+                    let imageArray = data.House_Image
+                    for (var index = 0; index < imageArray.length; index++) {
+                        await db.House_Image.create({
+                            houseId: houseIdUpdate,
+                            url: imageArray[index].url
+                        })
+                    }
+                    let typeIdArray = data.House_Type
+                    for (var index = 0; index < typeIdArray.length; index++) {
+                        await db.House_Type.create({
+                            houseId: houseIdUpdate,
+                            typeId: typeIdArray[index]
+                        })
+                    }
+                    let convenientIdArray = data.House_Convenient
+                    for (var index = 0; index < convenientIdArray.length; index++) {
+                        await db.House_Convenient.create({
+                            houseId: houseIdUpdate,
+                            convenientId: convenientIdArray[index]
+                        })
+                    }
+                    await db.Update_House.create({
+                        houseIdUpdate: houseIdUpdate,
+                        houseId: house.id
+                    })
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'Update Success!'
+                    })
+                }
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let searchHouse = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     getAllHouseOfType: getAllHouseOfType,
     getAllTypes: getAllTypes,
     getAllConvenients: getAllConvenients,
     getDetailHouseById: getDetailHouseById,
+    createHouse: createHouse,
+    deleteHouse: deleteHouse,
+    updateHouse: updateHouse
 }

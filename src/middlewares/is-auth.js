@@ -23,3 +23,20 @@ exports.authToken = (req, res, next) => {
         throw error;
     }
 };
+/**
+ * Auth Role
+ * @param {[String]} roles
+ */
+exports.authRole = (roles) => {
+    return async (req, res, next) => {
+        if (
+            !roles.includes(req.user.role) ||
+            req.user.status != 1
+        ) {
+            return res.status(401).json({
+                message: "Access Denied - Unauthorized",
+            });
+        }
+        next();
+    };
+};

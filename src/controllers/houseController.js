@@ -51,9 +51,57 @@ let getDetailHouseById = async (req, res) => {
     }
 }
 
+let createHouse = async (req, res) => {
+    let data = req.body.data
+    data.ownerId = req.user.id
+
+    if (!data.provinceCode || !data.districtCode || !data.name || !data.title ||
+        !data.price || !data.House_Info || !data.House_Image ||
+        !data.House_Type || !data.House_Convenient) {
+        return res.status(500).json({
+            errCode: 1,
+            message: 'Missing inputs parameter!',
+        })
+    }
+    let message = await houseService.createHouse(data);
+    return res.status(200).json(message)
+}
+
+let deleteHouse = async (req, res) => {
+    let houseId = req.query.houseId
+
+    if (!houseId) {
+        return res.status(500).json({
+            errCode: 1,
+            message: 'Missing inputs parameter!',
+        })
+    }
+    let message = await houseService.deleteHouse(houseId, req.user.id, req.user.role);
+    return res.status(200).json(message)
+}
+
+let updateHouse = async (req, res) => {
+    let houseId = req.query.houseId
+    let data = req.body.data
+
+    if (!houseId || !data.provinceCode || !data.districtCode || !data.name ||
+        !data.title || !data.price || !data.House_Info || !data.House_Image ||
+        !data.House_Type || !data.House_Convenient) {
+        return res.status(500).json({
+            errCode: 1,
+            message: 'Missing inputs parameter!',
+        })
+    }
+    let message = await houseService.updateHouse(houseId, req.user.id, data);
+    return res.status(200).json(message)
+}
+
 module.exports = {
     getAllTypes: getAllTypes,
     getAllHouseOfType: getAllHouseOfType,
     getAllConvenients: getAllConvenients,
     getDetailHouseById: getDetailHouseById,
+    createHouse: createHouse,
+    deleteHouse: deleteHouse,
+    updateHouse: updateHouse,
 }

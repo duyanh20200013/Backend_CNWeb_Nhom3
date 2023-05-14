@@ -28,6 +28,9 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.STRING
             },
+            addressDescription: {
+                type: Sequelize.TEXT('long')
+            },
             location: {
                 type: Sequelize.GEOMETRY('POINT')
             },

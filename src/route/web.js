@@ -1,7 +1,8 @@
 import express from "express";
 import houseController from '../controllers/houseController'
 import userController from '../controllers/userController'
-const { authToken } = require("../middlewares/is-auth");
+import amdinController from '../controllers/adminController'
+const { authToken, authRole } = require("../middlewares/is-auth");
 
 let router = express.Router();
 
@@ -18,6 +19,13 @@ let initWebRoutes = (app) => {
     router.post('/auth/reset-password', userController.resetPassword);
     router.put('/auth/update-password', userController.handleChangePassword);
     router.post('/api/update-profile', authToken, userController.updateprofile);
+
+    router.post('/api/create-house', authToken, authRole(["Owner"]), houseController.createHouse)
+    router.get('/api/delete-house', authToken, authRole(["Admin", "Owner"]), houseController.deleteHouse)
+    router.post('/api/update-house', authToken, authRole(["Owner"]), houseController.updateHouse)
+
+    router.post('/api/confirm-create-house', authToken, authRole(["Admin"]), amdinController.confirmCreateHouse)
+    router.post('/api/confirm-update-house', authToken, authRole(["Admin"]), amdinController.confirmUpdateHouse)
 
     return app.use("/", router)
 }

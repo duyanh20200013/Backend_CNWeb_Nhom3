@@ -19,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
         descriptionHTML: DataTypes.TEXT('long'),
         descriptionMarkDown: DataTypes.TEXT('long'),
         address: DataTypes.STRING,
+        addressDescription: DataTypes.TEXT('long'),
         location: DataTypes.GEOMETRY('POINT'),
         maxGuests: DataTypes.INTEGER,
         allowAnimals: DataTypes.BOOLEAN,
