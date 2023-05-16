@@ -44,6 +44,9 @@ module.exports = {
             countBed: {
                 type: Sequelize.INTEGER
             },
+            countBedRoom: {
+                type: Sequelize.INTEGER
+            },
             countBathRoom: {
                 type: Sequelize.INTEGER
             },

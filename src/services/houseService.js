@@ -44,10 +44,20 @@ let getAllHouseOfType = (typeId) => {
                         as: 'provinceData',
                         attributes: ['code', 'name', 'phoneCode']
                     },
+                    {
+                        model: db.User,
+                        as: 'ownerData',
+                        attributes: ['firstName', 'lastName', 'image']
+                    },
                 ],
                 raw: false,
                 nest: true
             })
+            if (HouseList) {
+                for (var i = 0; i < HouseList.length; i++) {
+                    HouseList[i].ownerData.image = Buffer.from(HouseList[i].ownerData.image, 'base64').toString('binary')
+                }
+            }
             resolve({
                 errCode: 0,
                 data: HouseList,
@@ -140,9 +150,6 @@ let getDetailHouseById = (inputId) => {
                 nest: true
             })
             if (data) {
-                // data.type = JSON.stringify(dataType);
-                // console.log(data.type)
-                // data.convenients = JSON.stringify(dataConvenient);
                 data.ownerData.image = Buffer.from(data.ownerData.image, 'base64').toString('binary')
             }
             if (!data) data = {};
@@ -356,7 +363,133 @@ let updateHouse = (houseId, userId, data) => {
 let searchHouse = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
+            let houseInfoObject = {};
+            let convenientsObject = {};
+            let typeObject = {};
+            let provinceObject = {};
+            let districtObject = {};
 
+            //Hoàn thiện phần check thời gian sau khi làm xong ContractService
+            //let timeObject ={}
+
+            // Check điều kiện trong House_Info
+            if (data.kindOfHouse) {
+                houseInfoObject.kindOfHouse = { [Op.or]: data.kindOfHouse }
+            }
+            if (data.countBed) {
+                if (data.countBed == 8) {
+                    houseInfoObject.countBed = { [Op.gte]: 8 }
+                } else {
+                    houseInfoObject.countBed = data.countBed
+                }
+            }
+            if (data.countBathRoom) {
+                if (data.countBathRoom == 8) {
+                    houseInfoObject.countBathRoom = { [Op.gte]: 8 }
+                } else {
+                    houseInfoObject.countBathRoom = data.countBathRoom
+                }
+            }
+            if (data.countBedRoom) {
+                if (data.countBedRoom == 8) {
+                    houseInfoObject.countBedRoom = { [Op.gte]: 8 }
+                } else {
+                    houseInfoObject.countBedRoom = data.countBedRoom
+                }
+            }
+            houseInfoObject.maxGuests = { [Op.gte]: data.guest, }
+            if (data.allowAnimals == false) {
+                houseInfoObject.allowAnimals = false
+            }
+
+            // Check điều kiện trong House_Convenients
+            // Search Convenient chưa tối ưu khi chỉ cần có 1 trong các Convenient đấy là dc trong khi yêu cầu cần có đủ hết Convenient
+            if (data.convenients) {
+                convenientsObject = {
+                    convenientId: {
+                        [Op.or]: data.convenients
+                    }
+                }
+            }
+
+            //Check điều kiện trong House_Type
+            if (data.typeId) {
+                typeObject = {
+                    typeId: data.typeId
+                }
+            }
+
+            //Check điều kiện trong Province
+            if (data.provinceCode) {
+                provinceObject = { code: data.provinceCode }
+            }
+            //Check điều kiện District
+            if (data.districtCode) {
+                districtObject = { code: data.districtCode }
+            }
+            let house = await db.House.findAll({
+                where: {
+                    price: {
+                        [Op.between]: [data.minPrice, data.maxPrice]
+                    },
+                    status: 'Active'
+                },
+                include: [
+                    {
+                        model: db.House_Info,
+                        attributes: [],
+                        where: houseInfoObject
+                    },
+                    {
+                        model: db.House_Type,
+                        as: 'houseTypeIdData',
+                        attributes: [],
+                        where: typeObject
+                    },
+                    {
+                        model: db.House_Convenient,
+                        as: 'houseConvenientIdData',
+                        attributes: [],
+                        where: convenientsObject
+                    },
+                    {
+                        model: db.District,
+                        as: 'districtData',
+                        attributes: ['code', 'name'],
+                        where: districtObject,
+                    },
+                    {
+                        model: db.Province,
+                        as: 'provinceData',
+                        attributes: ['code', 'name', 'phoneCode'],
+                        where: provinceObject,
+                    },
+                    {
+                        model: db.House_Image,
+                        as: 'houseImageIdData',
+                        attributes: ['url'],
+                    },
+                    {
+                        model: db.User,
+                        as: 'ownerData',
+                        attributes: ['firstName', 'lastName', 'image']
+                    },
+                ],
+                raw: false,
+                nest: true
+            })
+            //Convert Owner.Image sang binary
+            if (house) {
+                for (var i = 0; i < house.length; i++) {
+                    house[i].ownerData.image = Buffer.from(house[i].ownerData.image, 'base64').toString('binary')
+                }
+            }
+            resolve({
+                errCode: 0,
+                errMessage: 'OK',
+                countHouse: house.length,
+                data: house
+            })
         } catch (e) {
             reject(e);
         }
@@ -370,5 +503,6 @@ module.exports = {
     getDetailHouseById: getDetailHouseById,
     createHouse: createHouse,
     deleteHouse: deleteHouse,
-    updateHouse: updateHouse
+    updateHouse: updateHouse,
+    searchHouse: searchHouse,
 }

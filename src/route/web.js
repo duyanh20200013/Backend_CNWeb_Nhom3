@@ -11,6 +11,7 @@ let initWebRoutes = (app) => {
     router.get('/api/all-house-of-type', houseController.getAllHouseOfType);
     router.get('/api/allconvenient', houseController.getAllConvenients);
     router.get('/api/get-house-by-id', houseController.getDetailHouseById)
+    router.post('/api/search-house', houseController.searchHouse)
 
     router.post('/api/register', userController.handleCreateNewUser);
     router.post('/api/login', userController.handleLogin);

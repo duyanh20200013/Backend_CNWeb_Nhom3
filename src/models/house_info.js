@@ -24,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
         maxGuests: DataTypes.INTEGER,
         allowAnimals: DataTypes.BOOLEAN,
         countBed: DataTypes.INTEGER,
+        countBedRoom: DataTypes.INTEGER,
         countBathRoom: DataTypes.INTEGER,
     }, {
         sequelize,

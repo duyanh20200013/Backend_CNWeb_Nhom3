@@ -14,6 +14,7 @@ module.exports = {
                 maxGuests: 5,
                 allowAnimals: true,
                 countBed: 3,
+                countBedRoom: 2,
                 countBathRoom: 2,
                 createdAt: new Date(),
                 updatedAt: new Date()
@@ -29,6 +30,7 @@ module.exports = {
                 maxGuests: 4,
                 allowAnimals: false,
                 countBed: 2,
+                countBedRoom: 2,
                 countBathRoom: 2,
                 createdAt: new Date(),
                 updatedAt: new Date()
