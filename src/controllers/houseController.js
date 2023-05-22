@@ -38,6 +38,33 @@ let getAllConvenients = async (req, res) => {
         })
     }
 }
+
+let getAllTypeConvenients = async (req, res) => {
+    try {
+        let types = await houseService.getAllTypeConvenients()
+        return res.status(200).json(types)
+    } catch (e) {
+        console.log(e)
+        return res.status(200).json({
+            errCode: -1,
+            message: 'Error from service...'
+        })
+    }
+}
+
+let getAllHouseActive = async (req, res) => {
+    try {
+        let houses = await houseService.getAllHouseActive()
+        return res.status(200).json(houses)
+    } catch (e) {
+        console.log(e)
+        return res.status(200).json({
+            errCode: -1,
+            message: 'Error from service...'
+        })
+    }
+}
+
 let getDetailHouseById = async (req, res) => {
     try {
         let types = await houseService.getDetailHouseById(req.query.id)
@@ -113,6 +140,8 @@ module.exports = {
     getAllTypes: getAllTypes,
     getAllHouseOfType: getAllHouseOfType,
     getAllConvenients: getAllConvenients,
+    getAllTypeConvenients: getAllTypeConvenients,
+    getAllHouseActive: getAllHouseActive,
     getDetailHouseById: getDetailHouseById,
     createHouse: createHouse,
     deleteHouse: deleteHouse,

@@ -16,9 +16,140 @@ let confirmCreateHouse = (InputId) => {
             } else {
                 house.status = 'Active'
                 await house.save();
+                let emailOwner = await db.User.findOne({
+                    where: { id: house.ownerId },
+                    attributes: ['email'],
+                    raw: false
+                })
                 resolve({
                     errCode: 0,
-                    errMessage: 'Duyệt thành công!'
+                    errMessage: 'Duyệt thành công!',
+                    emailOwner: emailOwner.email
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let getAllHouseWaitCreate = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let house = await db.House.findAll({
+                where: { status: 'Wait Cofirm Create' },
+                raw: false,
+                include: [
+                    {
+                        model: db.User,
+                        as: 'ownerData',
+                        attributes: ['firstName', 'lastName', 'image']
+                    },
+                    {
+                        model: db.District,
+                        as: 'districtData',
+                        attributes: ['code', 'name']
+                    },
+                    {
+                        model: db.Province,
+                        as: 'provinceData',
+                        attributes: ['code', 'name', 'phoneCode']
+                    },
+                ]
+            })
+            if (!house) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'House not found!'
+                })
+            } else {
+                for (var i = 0; i < house.length; i++) {
+                    house[i].ownerData.image = Buffer.from(house[i].ownerData.image, 'base64').toString('binary')
+                }
+                resolve({
+                    errCode: 0,
+                    errMessage: 'OK',
+                    data: house
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let rejectCreateHouse = (inputId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let house = await db.House.findOne({
+                where: { id: inputId },
+                raw: false
+            })
+            if (!house) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'House not found!'
+                })
+            } else {
+                let emailOwner = await db.User.findOne({
+                    where: { id: house.ownerId },
+                    attributes: ['email'],
+                    raw: false
+                })
+                let message = await houseService.deleteHouse(inputId, 2, 'Admin')
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Từ chối Create House!',
+                    emailOwner: emailOwner.email
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let getAllHouseWaitUpdate = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let house = await db.House.findAll({
+                where: { status: 'Wait Cofirm Update' },
+                raw: false,
+                include: [
+                    {
+                        model: db.User,
+                        as: 'ownerData',
+                        attributes: ['firstName', 'lastName', 'image']
+                    },
+                    {
+                        model: db.District,
+                        as: 'districtData',
+                        attributes: ['code', 'name']
+                    },
+                    {
+                        model: db.Province,
+                        as: 'provinceData',
+                        attributes: ['code', 'name', 'phoneCode']
+                    },
+                    {
+                        model: db.Update_House,
+                        attributes: ['houseId', 'houseIdUpdate']
+                    }
+                ]
+            })
+            if (!house) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'House not found!'
+                })
+            } else {
+                for (var i = 0; i < house.length; i++) {
+                    house[i].ownerData.image = Buffer.from(house[i].ownerData.image, 'base64').toString('binary')
+                }
+                resolve({
+                    errCode: 0,
+                    errMessage: 'OK',
+                    data: house
                 })
             }
         } catch (e) {
@@ -111,10 +242,17 @@ let confirmUpdateHouse = (inputId) => {
                     updateHouseImageArray[index].houseId = update.houseId
                     await updateHouseImageArray[index].save()
                 }
+
+                let emailOwner = await db.User.findOne({
+                    where: { id: updateHouse.ownerId },
+                    attributes: ['email'],
+                    raw: false
+                })
                 let message = await houseService.deleteHouse(inputId, 2, 'Admin')
                 resolve({
                     errCode: 0,
-                    errMessage: 'Confirm update success!'
+                    errMessage: 'Confirm update success!',
+                    emailOwner: emailOwner
                 })
             }
         } catch (e) {
@@ -123,7 +261,76 @@ let confirmUpdateHouse = (inputId) => {
     })
 }
 
+let rejectUpdateHouse = (inputId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let house = await db.House.findOne({
+                where: { id: inputId },
+                raw: false
+            })
+            if (!house) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'House not found!'
+                })
+            } else {
+                let emailOwner = await db.User.findOne({
+                    where: { id: house.ownerId },
+                    attributes: ['email'],
+                    raw: false
+                })
+                let message = await houseService.deleteHouse(inputId, 2, 'Admin')
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Từ chối Update House!',
+                    emailOwner: emailOwner.email
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let getAllOwnerHouse = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let ownerHouse = await db.User.findAll({
+                where: { role: 'Owner' },
+                attributes: {
+                    exclude: ['refreshToken', 'resetToken', 'resetTokenExpiration', 'password'],
+                },
+                raw: false,
+            })
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let getAllCustomer = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let ownerHouse = await db.User.findAll({
+                where: { role: 'Customer' },
+                attributes: {
+                    exclude: ['refreshToken', 'resetToken', 'resetTokenExpiration', 'password'],
+                },
+                raw: false,
+            })
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     confirmCreateHouse: confirmCreateHouse,
-    confirmUpdateHouse: confirmUpdateHouse
+    getAllHouseWaitCreate: getAllHouseWaitCreate,
+    confirmUpdateHouse: confirmUpdateHouse,
+    getAllHouseWaitUpdate: getAllHouseWaitUpdate,
+    rejectCreateHouse: rejectCreateHouse,
+    rejectUpdateHouse: rejectUpdateHouse,
+    getAllOwnerHouse: getAllOwnerHouse,
+    getAllCustomer: getAllCustomer
 }

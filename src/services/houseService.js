@@ -86,6 +86,75 @@ let getAllConvenients = () => {
     })
 }
 
+let getAllTypeConvenients = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let arrayName = [];
+            let typeConvenients = await db.Convenient.findAll({
+                attributes: ['typeConvenient'],
+                raw: false
+            })
+            for (var index = 0; index < typeConvenients.length; index++) {
+                arrayName.push(typeConvenients[index].typeConvenient)
+            }
+            resolve({
+                errCode: 0,
+                data: Array.from(new Set(arrayName))
+            })
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let getAllHouseActive = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let HouseList = await db.House.findAll({
+                where: { status: 'Active' },
+                attributes: {
+                    exclude: ['provinceCode', 'districtCode'],
+                },
+                include: [
+                    {
+                        model: db.House_Image,
+                        as: 'houseImageIdData',
+                        attributes: ['url'],
+                    },
+                    {
+                        model: db.District,
+                        as: 'districtData',
+                        attributes: ['code', 'name']
+                    },
+                    {
+                        model: db.Province,
+                        as: 'provinceData',
+                        attributes: ['code', 'name', 'phoneCode']
+                    },
+                    {
+                        model: db.User,
+                        as: 'ownerData',
+                        attributes: ['firstName', 'lastName', 'image']
+                    },
+                ],
+                raw: false,
+                nest: true
+            })
+            if (HouseList) {
+                for (var i = 0; i < HouseList.length; i++) {
+                    HouseList[i].ownerData.image = Buffer.from(HouseList[i].ownerData.image, 'base64').toString('binary')
+                }
+            }
+            resolve({
+                errCode: 0,
+                data: HouseList
+            })
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 let getDetailHouseById = (inputId) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -260,6 +329,9 @@ let deleteHouse = (houseId, userId, userRole) => {
                     })
                     await db.Update_House.destroy({
                         where: { houseIdUpdate: houseId }
+                    })
+                    await db.Favourite_House.destroy({
+                        where: { houseId: houseId }
                     })
                     // Hoàn thiện khi viết xong con review
 
@@ -500,6 +572,8 @@ module.exports = {
     getAllHouseOfType: getAllHouseOfType,
     getAllTypes: getAllTypes,
     getAllConvenients: getAllConvenients,
+    getAllTypeConvenients: getAllTypeConvenients,
+    getAllHouseActive: getAllHouseActive,
     getDetailHouseById: getDetailHouseById,
     createHouse: createHouse,
     deleteHouse: deleteHouse,
