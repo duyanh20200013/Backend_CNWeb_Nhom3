@@ -2,45 +2,38 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable('Contracts', {
+        await queryInterface.createTable('Verify_Infomation_Owners', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            customerId: {
-                type: Sequelize.INTEGER
-            },
-            houseId: {
-                type: Sequelize.INTEGER
-            },
-            arriveDate: {
-                allowNull: false,
-                type: Sequelize.DATE
-            },
-            leftDate: {
-                allowNull: false,
-                type: Sequelize.DATE
-            },
-            price: {
+            ownerId: {
                 allowNull: false,
                 type: Sequelize.INTEGER
             },
-            numberOver13: {
-                type: Sequelize.INTEGER
-            },
-            numberUnder13: {
-                type: Sequelize.INTEGER
-            },
-            numberChildren: {
-                type: Sequelize.INTEGER
-            },
-            haveAnimals: {
-                type: Sequelize.BOOLEAN
-            },
-            status: {
+            cardNumber: {
+                allowNull: false,
                 type: Sequelize.STRING
+            },
+            accountName: {
+                allowNull: false,
+                type: Sequelize.STRING
+            },
+            bankName: {
+                allowNull: false,
+                type: Sequelize.STRING
+            },
+            CCCDNumber: {
+                allowNull: false,
+                type: Sequelize.STRING
+            },
+            CCCDfrontImage: {
+                type: Sequelize.BLOB('long')
+            },
+            CCCDbackImage: {
+                type: Sequelize.BLOB('long')
             },
             createdAt: {
                 allowNull: false,
@@ -53,6 +46,6 @@ module.exports = {
         });
     },
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable('Contracts');
+        await queryInterface.dropTable('Verify_Infomation_Owners');
     }
 };

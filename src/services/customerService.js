@@ -1,4 +1,3 @@
-import e from 'cors';
 import db from '../models/index';
 
 // Xử lý Favourite House
@@ -30,8 +29,8 @@ let getAllNameListFavourite = (customerId) => {
                 attributes: ['name'],
                 raw: false
             })
-            for (var index = 0; index < listName.length; index++) {
-                arrayName.push(listName[index].title)
+            for (let name of listName) {
+                arrayName.push(name.name)
             }
             resolve({
                 errCode: 0,
@@ -85,12 +84,15 @@ let getAllHouseOfOneFavouriteList = (customerId, name) => {
                 nest: true
 
             })
-            if (!house) {
+            if (!houses) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Favourite_House not found!'
                 })
             } else {
+                for (let house of houses) {
+                    house.ownerData.image = Buffer.from(house.ownerData.image, 'base64').toString('binary')
+                }
                 resolve({
                     errCode: 0,
                     errMessage: 'OK!',
@@ -194,7 +196,98 @@ let updateNameFavouriteList = (name, newName, customerId) => {
     })
 }
 
-// Xử lý ...........
+// Xử lý Contract
+let createContract = (customerId, data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await db.Contract.create({
+                customerId: customerId,
+                houseId: data.houseId,
+                arriveDate: data.arriveDate,
+                leftDate: data.leftDate,
+                price: data.price,
+                numberOver13: data.numberOver13,
+                numberUnder13: data.numberUnder13,
+                numberChildren: data.numberChildren,
+                haveAnimals: data.haveAnimals,
+                status: 'Đang chờ xác nhận'
+            })
+            resolve({
+                errCode: 0,
+                errMessage: 'Create Contract Successfully!'
+            })
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let getAllContractOfCustomer = (customerId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let contracts = await db.Contract.findAll({
+                where: { customerId: customerId },
+                include: [
+                    {
+                        model: db.Review,
+                        as: 'ReviewData',
+                        attributes: [star, description],
+                    },
+                    {
+                        model: db.House,
+                        as: 'houseContractData',
+                        attributes: {
+                            exclude: ['ownerId', 'createdAt', 'updatedAt'],
+                        },
+                    },
+                ],
+                raw: false,
+                nest: true
+            })
+            resolve({
+                errCode: 0,
+                errMessage: 'Ok!',
+                data: contracts
+            })
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let getDatailContract = (contractId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let contract = await db.Contract.findOne({
+                where: { id: contractId },
+                include: [
+                    {
+                        model: db.Review,
+                        as: 'ReviewData',
+                        attributes: [star, description],
+                    },
+                    {
+                        model: db.House,
+                        as: 'houseContractData',
+                        attributes: {
+                            exclude: ['ownerId', 'createdAt', 'updatedAt'],
+                        },
+                    },
+                ],
+                raw: false,
+                nest: true
+            })
+
+            resolve({
+                errCode: 0,
+                errMessage: 'Ok!',
+                data: contract
+            })
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
 
 module.exports = {
     addFavouriteHouse: addFavouriteHouse,
@@ -203,5 +296,7 @@ module.exports = {
     getAllFavouriteHouseId: getAllFavouriteHouseId,
     deleteOneFavouriteHouse: deleteOneFavouriteHouse,
     deleteFavouriteHouseByName: deleteFavouriteHouseByName,
-    updateNameFavouriteList: updateNameFavouriteList
+    updateNameFavouriteList: updateNameFavouriteList,
+    createContract: createContract,
+    getAllContractOfCustomer: getAllContractOfCustomer
 }

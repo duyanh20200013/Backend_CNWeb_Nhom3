@@ -15,6 +15,9 @@ module.exports = {
             houseId: {
                 type: Sequelize.INTEGER
             },
+            contractId: {
+                type: Sequelize.INTEGER
+            },
             star: {
                 type: Sequelize.INTEGER
             },

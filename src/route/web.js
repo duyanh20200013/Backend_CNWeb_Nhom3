@@ -3,11 +3,14 @@ import houseController from '../controllers/houseController'
 import userController from '../controllers/userController'
 import amdinController from '../controllers/adminController'
 import customerController from '../controllers/customerController'
+import ownerController from '../controllers/ownerController'
 const { authToken, authRole } = require("../middlewares/is-auth");
 
 let router = express.Router();
 
 let initWebRoutes = (app) => {
+    router.get('/api/all-province', houseController.getAllProvince);
+    router.get('/api/all-district', houseController.getAllDistrict);
     router.get('/api/alltype', houseController.getAllTypes);
     router.get('/api/all-house-of-type', houseController.getAllHouseOfType);
     router.get('/api/allconvenient', houseController.getAllConvenients);
@@ -44,6 +47,13 @@ let initWebRoutes = (app) => {
     router.post('/api/delete-favourite-house-by-id', authToken, authRole(["Customer"]), customerController.deleteOneFavouriteHouse)
     router.post('/api/delete-favourite-house-by-name', authToken, authRole(["Customer"]), customerController.deleteFavouriteHouseByName)
     router.post('/api/update-name-favourite-list', authToken, authRole(["Customer"]), customerController.updateNameFavouriteList)
+
+    router.post('/api/create-contract', authToken, authRole(["Customer"]), customerController.createContract)
+    router.get('/api/get-all-contract-of-customer', authToken, authRole(["Admin", "Customer"]), customerController.getAllContractOfCustomer)
+
+    router.post('/api/create-verify-infomation', authToken, authRole(["Owner"]), ownerController.createVerifyInfomation)
+    router.post('/api/update-verify-infomation', authToken, authRole(["Owner"]), ownerController.updateVerifyInfomation)
+    router.get('/api/get-verify-infomation', authToken, authRole(["Admin", "Owner"]), ownerController.getVerifyInfomation)
 
 
     return app.use("/", router)

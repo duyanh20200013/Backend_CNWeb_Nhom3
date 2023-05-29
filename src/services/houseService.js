@@ -1,6 +1,34 @@
 import db from '../models/index'
 const { Op, where } = require("sequelize");
 
+let getAllProvince = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let provinces = await db.Province.findAll()
+            resolve({
+                errCode: 0,
+                data: provinces
+            })
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let getAllDistrict = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let districts = await db.District.findAll()
+            resolve({
+                errCode: 0,
+                data: districts
+            })
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 let getAllTypes = () => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -333,6 +361,9 @@ let deleteHouse = (houseId, userId, userRole) => {
                     await db.Favourite_House.destroy({
                         where: { houseId: houseId }
                     })
+                    await db.Contract.destroy({
+                        where: { houseId: houseId }
+                    })
                     // Hoàn thiện khi viết xong con review
 
                     // await db.Review.destroy({
@@ -569,6 +600,8 @@ let searchHouse = (data) => {
 }
 
 module.exports = {
+    getAllProvince: getAllProvince,
+    getAllDistrict: getAllDistrict,
     getAllHouseOfType: getAllHouseOfType,
     getAllTypes: getAllTypes,
     getAllConvenients: getAllConvenients,

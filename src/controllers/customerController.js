@@ -91,6 +91,40 @@ let updateNameFavouriteList = async (req, res) => {
     return res.status(200).json(message)
 }
 
+let createContract = async (req, res) => {
+    let data = req.body.data
+    let customerId = req.user.id
+
+    if (!data.houseId || !data.arriveDate || !customerId || !data.leftDate ||
+        !data.price || !data.numberOver13 || !data.numberUnder13 || !data.numberChildren || !data.haveAnimals) {
+        return res.status(500).json({
+            errCode: 1,
+            message: 'Missing inputs parameter!',
+        })
+    }
+    let message = await customerService.createContract(customerId, data);
+    return res.status(200).json(message)
+}
+
+let getAllContractOfCustomer = async (req, res) => {
+    let customerId = req.query.userId;
+    let userId = req.user.id;
+    let userRole = req.user.role
+    if (!customerId) {
+        return res.status(500).json({
+            errCode: 1,
+            message: 'Missing inputs parameter!',
+        })
+    }
+    if (userRole === 'Admin' || (userRole === 'Owner' && customerId === userId)) {
+        let message = await customerService.getAllContractOfCustomer(customerId);
+        return res.status(200).json(message)
+    }
+    return res.status(401).json({
+        message: "Access Denied - Unauthorized",
+    });
+}
+
 module.exports = {
     addFavouriteHouse: addFavouriteHouse,
     getAllNameListFavourite: getAllNameListFavourite,
@@ -98,5 +132,7 @@ module.exports = {
     getAllFavouriteHouseId: getAllFavouriteHouseId,
     deleteOneFavouriteHouse: deleteOneFavouriteHouse,
     deleteFavouriteHouseByName: deleteFavouriteHouseByName,
-    updateNameFavouriteList: updateNameFavouriteList
+    updateNameFavouriteList: updateNameFavouriteList,
+    createContract: createContract,
+    getAllContractOfCustomer: getAllContractOfCustomer
 }

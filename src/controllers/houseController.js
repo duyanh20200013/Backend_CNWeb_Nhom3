@@ -1,5 +1,31 @@
 import houseService from '../services/houseService'
 
+let getAllProvince = async (req, res) => {
+    try {
+        let types = await houseService.getAllProvince()
+        return res.status(200).json(types)
+    } catch (e) {
+        console.log(e)
+        return res.status(200).json({
+            errCode: -1,
+            message: 'Error from service...'
+        })
+    }
+}
+
+let getAllDistrict = async (req, res) => {
+    try {
+        let types = await houseService.getAllDistrict()
+        return res.status(200).json(types)
+    } catch (e) {
+        console.log(e)
+        return res.status(200).json({
+            errCode: -1,
+            message: 'Error from service...'
+        })
+    }
+}
+
 let getAllTypes = async (req, res) => {
     try {
         let types = await houseService.getAllTypes()
@@ -137,6 +163,8 @@ let searchHouse = async (req, res) => {
 }
 
 module.exports = {
+    getAllProvince: getAllProvince,
+    getAllDistrict: getAllDistrict,
     getAllTypes: getAllTypes,
     getAllHouseOfType: getAllHouseOfType,
     getAllConvenients: getAllConvenients,

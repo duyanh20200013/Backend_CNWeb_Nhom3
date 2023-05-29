@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             User.hasMany(models.House, { foreignKey: 'ownerId', targetKey: 'id', as: 'ownerData' })
-            // User.hasMany(models.User, { foreignKey: 'gender', as: 'genderData' })
+            User.hasMany(models.Contract, { foreignKey: 'customerId', as: 'customerContractData' })
+            User.hasOne(models.Verify_Infomation_Owner, { foreignKey: 'ownerId' })
             // User.hasMany(models.Schedule, { foreignKey: 'timeType', as: 'timeTypeData' })
         }
     };

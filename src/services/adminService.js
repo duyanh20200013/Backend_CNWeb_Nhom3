@@ -1,6 +1,8 @@
 import db from '../models/index'
 import houseService from './houseService'
 
+//Xử lý Create/Update House
+
 let confirmCreateHouse = (InputId) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -292,16 +294,94 @@ let rejectUpdateHouse = (inputId) => {
     })
 }
 
+// Xử lý Contract
+// Lấy data của chủ nhà và khách hàng phục vụ việc gửi mail thông báo cho cả 2 bên
+let getDataForEmail = (customerId, houseId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let house = await db.House.findOne({
+                where: { id: houseId },
+                raw: false
+            })
+            let customerData = await db.User.findOne({
+                where: { id: customerId },
+                attributes: {
+                    exclude: ['refreshToken', 'resetToken', 'resetTokenExpiration', 'password', 'role', 'image'],
+                },
+                raw: false
+            })
+            let ownerData = await db.User.findOne({
+                where: { id: house.ownerId },
+                attributes: {
+                    exclude: ['refreshToken', 'resetToken', 'resetTokenExpiration', 'password', 'role', 'image'],
+                },
+                raw: false
+            })
+            resolve({
+                customerData: customerData,
+                ownerData: ownerData
+            })
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+// Update trạng thái thành trả 1 phần(Đặt cọc)
+let partialPaymentContract = (contractId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let contract = await db.Contract.findOne({
+                where: { id: contractId },
+                raw: false
+            })
+            if (!contract) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Contract not found!'
+                })
+            } else {
+                contract.status = 'Đặt cọc '
+                await contract.save();
+                let data = await getDataForEmail(contract.customerId, contract.houseId);
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Đặt cọc thành công!',
+                    data: data
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
+//Xử lý quản lý Owner,Customer
+
 let getAllOwnerHouse = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            let ownerHouse = await db.User.findAll({
+            let owners = await db.User.findAll({
                 where: { role: 'Owner' },
                 attributes: {
                     exclude: ['refreshToken', 'resetToken', 'resetTokenExpiration', 'password'],
                 },
                 raw: false,
             })
+            if (!owners) {
+                resolve({
+                    errCode: 1,
+                    data: []
+                })
+            } else {
+                for (let owner of owners) {
+                    owner.image = Buffer.from(owner.image, 'base64').toString('binary')
+                }
+                resolve({
+                    errCode: 0,
+                    data: owners
+                })
+            }
         } catch (e) {
             reject(e);
         }
@@ -311,13 +391,27 @@ let getAllOwnerHouse = () => {
 let getAllCustomer = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            let ownerHouse = await db.User.findAll({
+            let customers = await db.User.findAll({
                 where: { role: 'Customer' },
                 attributes: {
                     exclude: ['refreshToken', 'resetToken', 'resetTokenExpiration', 'password'],
                 },
                 raw: false,
             })
+            if (!customers) {
+                resolve({
+                    errCode: 1,
+                    data: []
+                })
+            } else {
+                for (let customer of customers) {
+                    customer.image = Buffer.from(customer.image, 'base64').toString('binary')
+                }
+                resolve({
+                    errCode: 0,
+                    data: customers
+                })
+            }
         } catch (e) {
             reject(e);
         }
@@ -332,5 +426,6 @@ module.exports = {
     rejectCreateHouse: rejectCreateHouse,
     rejectUpdateHouse: rejectUpdateHouse,
     getAllOwnerHouse: getAllOwnerHouse,
-    getAllCustomer: getAllCustomer
+    getAllCustomer: getAllCustomer,
+    partialPaymentContract: partialPaymentContract
 }
