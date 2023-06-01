@@ -1,5 +1,6 @@
 import db from '../models/index'
 import houseService from './houseService'
+import customerService from './customerService'
 
 //Xử lý Create/Update House
 
@@ -295,8 +296,8 @@ let rejectUpdateHouse = (inputId) => {
 }
 
 // Xử lý Contract
-// Lấy data của chủ nhà và khách hàng phục vụ việc gửi mail thông báo cho cả 2 bên
-let getDataForEmail = (customerId, houseId) => {
+// Lấy data của chủ nhà và khách hàng và hợp đồng phục vụ việc gửi mail thông báo cho cả 2 bên
+let getDataForEmail = (customerId, houseId, contractId) => {
     return new Promise(async (resolve, reject) => {
         try {
             let house = await db.House.findOne({
@@ -317,9 +318,11 @@ let getDataForEmail = (customerId, houseId) => {
                 },
                 raw: false
             })
+            let contractData = await customerService.getDatailContract(contractId)
             resolve({
                 customerData: customerData,
-                ownerData: ownerData
+                ownerData: ownerData,
+                contractData: contractData
             })
         } catch (e) {
             reject(e);
@@ -340,9 +343,9 @@ let partialPaymentContract = (contractId) => {
                     errMessage: 'Contract not found!'
                 })
             } else {
-                contract.status = 'Đặt cọc '
+                contract.status = 'Đặt cọc'
                 await contract.save();
-                let data = await getDataForEmail(contract.customerId, contract.houseId);
+                let data = await getDataForEmail(contract.customerId, contract.houseId, contractId);
                 resolve({
                     errCode: 0,
                     errMessage: 'Đặt cọc thành công!',
@@ -354,7 +357,34 @@ let partialPaymentContract = (contractId) => {
         }
     })
 }
-
+// Update Trạng thái thành thanh toán Toàn bộ
+let fullPaymentContract = (contractId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let contract = await db.Contract.findOne({
+                where: { id: contractId },
+                raw: false
+            })
+            if (!contract) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Contract not found!'
+                })
+            } else {
+                contract.status = 'Hoàn tất thanh toán'
+                await contract.save();
+                let data = await getDataForEmail(contract.customerId, contract.houseId, contractId);
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Thanh toán thành công',
+                    data: data
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
 
 //Xử lý quản lý Owner,Customer
 
@@ -427,5 +457,6 @@ module.exports = {
     rejectUpdateHouse: rejectUpdateHouse,
     getAllOwnerHouse: getAllOwnerHouse,
     getAllCustomer: getAllCustomer,
-    partialPaymentContract: partialPaymentContract
+    partialPaymentContract: partialPaymentContract,
+    fullPaymentContract: fullPaymentContract
 }

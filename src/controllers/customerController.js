@@ -95,8 +95,7 @@ let createContract = async (req, res) => {
     let data = req.body.data
     let customerId = req.user.id
 
-    if (!data.houseId || !data.arriveDate || !customerId || !data.leftDate ||
-        !data.price || !data.numberOver13 || !data.numberUnder13 || !data.numberChildren || !data.haveAnimals) {
+    if (!data.houseId || !data.arriveDate || !data.leftDate || !data.price || !data.numberOver13 || !data.numberUnder13 || !data.numberChildren || data.haveAnimals == null) {
         return res.status(500).json({
             errCode: 1,
             message: 'Missing inputs parameter!',
@@ -107,17 +106,40 @@ let createContract = async (req, res) => {
 }
 
 let getAllContractOfCustomer = async (req, res) => {
-    let customerId = req.query.userId;
+    let customerId = req.query.customerId;
     let userId = req.user.id;
-    let userRole = req.user.role
-    if (!customerId) {
+    let userRole = req.user.role;
+
+    if (!customerId || !userId || !userRole) {
         return res.status(500).json({
             errCode: 1,
             message: 'Missing inputs parameter!',
         })
     }
-    if (userRole === 'Admin' || (userRole === 'Owner' && customerId === userId)) {
-        let message = await customerService.getAllContractOfCustomer(customerId);
+    else {
+        if (userRole === 'Admin' || customerId == userId) {
+            let message = await customerService.getAllContractOfCustomer(customerId);
+            return res.status(200).json(message);
+        } else {
+            return res.status(401).json({
+                message: "Access Denied - Unauthorized",
+            });
+        }
+    }
+}
+
+let getDatailContract = async (req, res) => {
+    let contractId = req.query.contractId;
+    let userId = req.user.id;
+    let userRole = req.user.role
+    if (!contractId) {
+        return res.status(500).json({
+            errCode: 1,
+            message: 'Missing inputs parameter!',
+        })
+    }
+    let message = await customerService.getDatailContract(contractId);
+    if (userRole === 'Admin' || (userRole === 'Customer' && message.contract.customerId == userId)) {
         return res.status(200).json(message)
     }
     return res.status(401).json({
@@ -134,5 +156,6 @@ module.exports = {
     deleteFavouriteHouseByName: deleteFavouriteHouseByName,
     updateNameFavouriteList: updateNameFavouriteList,
     createContract: createContract,
-    getAllContractOfCustomer: getAllContractOfCustomer
+    getAllContractOfCustomer: getAllContractOfCustomer,
+    getDatailContract: getDatailContract
 }

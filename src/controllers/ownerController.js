@@ -4,7 +4,7 @@ let createVerifyInfomation = async (req, res) => {
     let data = req.body.data
     let ownerId = req.user.id
 
-    if (!data.cardNumber || !data.accountName || !ownerId || !data.bankName || !data.CCCDNumber || !data.CCCDfrontImage || !data.CCCDbackImage) {
+    if (!data.cardNumber || !data.accountName || !ownerId || !data.bankName || !data.CCCDNumber) {
         return res.status(500).json({
             errCode: 1,
             message: 'Missing inputs parameter!',
@@ -25,7 +25,7 @@ let getVerifyInfomation = async (req, res) => {
         })
     }
 
-    if (userRole === 'Admin' || (userRole === 'Owner' && ownerId === userId)) {
+    if (userRole === 'Admin' || (userRole === 'Owner' && ownerId == userId)) {
         let message = await ownerService.getVerifyInfomation(ownerId);
         return res.status(200).json(message)
     }
@@ -39,7 +39,7 @@ let updateVerifyInfomation = async (req, res) => {
     let data = req.body.data
     let ownerId = req.user.id
 
-    if (!data.cardNumber || !data.accountName || !ownerId || !data.bankName || !data.CCCDNumber || !data.CCCDfrontImage || !data.CCCDbackImage) {
+    if (!data.cardNumber || !data.accountName || !ownerId || !data.bankName || !data.CCCDNumber) {
         return res.status(500).json({
             errCode: 1,
             message: 'Missing inputs parameter!',

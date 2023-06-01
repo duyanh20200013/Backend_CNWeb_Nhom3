@@ -37,6 +37,10 @@ let initWebRoutes = (app) => {
     router.get('/api/reject-update-house', authToken, authRole(["Admin"]), amdinController.rejectUpdateHouse)
     router.get('/api/get-all-create-house', authToken, authRole(["Admin"]), amdinController.getAllHouseWaitCreate)
     router.get('/api/get-all-update-house', authToken, authRole(["Admin"]), amdinController.getAllHouseWaitUpdate)
+    //Xử lý Contract
+    router.get('/api/partial-payment-contract', authToken, authRole(["Admin"]), amdinController.partialPaymentContract)
+    router.get('/api/full-payment-contract', authToken, authRole(["Admin"]), amdinController.fullPaymentContract)
+
     router.get('/api/get-all-owner', authToken, authRole(["Admin"]), amdinController.getAllOwnerHouse)
     router.get('/api/get-all-customer', authToken, authRole(["Admin"]), amdinController.getAllCustomer)
 
@@ -50,6 +54,7 @@ let initWebRoutes = (app) => {
 
     router.post('/api/create-contract', authToken, authRole(["Customer"]), customerController.createContract)
     router.get('/api/get-all-contract-of-customer', authToken, authRole(["Admin", "Customer"]), customerController.getAllContractOfCustomer)
+    router.get('/api/get-contract-by-id', authToken, authRole(["Admin", "Customer"]), customerController.getDatailContract)
 
     router.post('/api/create-verify-infomation', authToken, authRole(["Owner"]), ownerController.createVerifyInfomation)
     router.post('/api/update-verify-infomation', authToken, authRole(["Owner"]), ownerController.updateVerifyInfomation)

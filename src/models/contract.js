@@ -12,14 +12,14 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             Contract.belongsTo(models.House, { foreignKey: 'houseId', targetKey: 'id', as: 'houseContractData' })
             Contract.belongsTo(models.User, { foreignKey: 'customerId', targetKey: 'id', as: 'customerContractData' })
-            Contract.hasMany(models.House, { foreignKey: 'contractId', as: 'ReviewData' })
+            Contract.hasMany(models.Review, { foreignKey: 'contractId', as: 'ReviewData' })
         }
     };
     Contract.init({
         customerId: DataTypes.INTEGER,
         houseId: DataTypes.INTEGER,
-        arriveDate: DataTypes.DATE,
-        leftDate: DataTypes.DATE,
+        arriveDate: DataTypes.DATEONLY,
+        leftDate: DataTypes.DATEONLY,
         price: DataTypes.INTEGER,
         numberOver13: DataTypes.INTEGER,
         numberUnder13: DataTypes.INTEGER,

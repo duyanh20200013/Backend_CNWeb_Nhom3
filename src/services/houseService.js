@@ -242,6 +242,14 @@ let getDetailHouseById = (inputId) => {
                         as: 'ownerData',
                         attributes: ['firstName', 'lastName', 'phone', 'address', 'image']
                     },
+                    {
+                        model: db.Contract,
+                        as: 'houseContractData',
+                        where: {
+                            [Op.or]: [{ status: 'Đang chờ xác nhận' }, { status: 'Đặt cọc' }, { status: 'Hoàn tất thanh toán' }]
+                        },
+                        attributes: ['arriveDate', 'leftDate']
+                    },
                 ],
                 raw: false,
                 nest: true
@@ -473,7 +481,29 @@ let searchHouse = (data) => {
             let districtObject = {};
 
             //Hoàn thiện phần check thời gian sau khi làm xong ContractService
-            //let timeObject ={}
+            //Tìm list nhà bị trùng lịch không thể đặt
+            let houseIdSameDate = [];
+            if (data.time) {
+                let contracts = await db.Contract.findAll({
+                    where: {
+                        [Op.or]: {
+                            arriveDate: {
+                                [Op.gte]: data.time.arriveDate,
+                                [Op.lte]: data.time.leftDate
+                            },
+                            leftDate: {
+                                [Op.gte]: data.time.arriveDate,
+                                [Op.lte]: data.time.leftDate
+                            }
+                        }
+                    },
+                    attributes: ['houseId'],
+                    raw: false
+                })
+                for (var contract of contracts) {
+                    houseIdSameDate.push(contract.houseId);
+                }
+            }
 
             // Check điều kiện trong House_Info
             if (data.kindOfHouse) {
@@ -581,17 +611,21 @@ let searchHouse = (data) => {
                 raw: false,
                 nest: true
             })
-            //Convert Owner.Image sang binary
+            //Convert Owner.Image sang binary và xoá các nhà bị trùng lịch
+            let newHouseafterRemove = []
             if (house) {
-                for (var i = 0; i < house.length; i++) {
-                    house[i].ownerData.image = Buffer.from(house[i].ownerData.image, 'base64').toString('binary')
+                newHouseafterRemove = house.filter(item => !houseIdSameDate.includes(item.id))
+                if (newHouseafterRemove.length > 0) {
+                    for (var i = 0; i < newHouseafterRemove.length; i++) {
+                        newHouseafterRemove[i].ownerData.image = Buffer.from(newHouseafterRemove[i].ownerData.image, 'base64').toString('binary');
+                    }
                 }
             }
             resolve({
                 errCode: 0,
                 errMessage: 'OK',
-                countHouse: house.length,
-                data: house
+                countHouse: newHouseafterRemove.length,
+                data: newHouseafterRemove,
             })
         } catch (e) {
             reject(e);

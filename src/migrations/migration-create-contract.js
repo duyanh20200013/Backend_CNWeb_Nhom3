@@ -17,11 +17,11 @@ module.exports = {
             },
             arriveDate: {
                 allowNull: false,
-                type: Sequelize.DATE
+                type: Sequelize.DATEONLY
             },
             leftDate: {
                 allowNull: false,
-                type: Sequelize.DATE
+                type: Sequelize.DATEONLY
             },
             price: {
                 allowNull: false,
@@ -37,7 +37,8 @@ module.exports = {
                 type: Sequelize.INTEGER
             },
             haveAnimals: {
-                type: Sequelize.BOOLEAN
+                type: Sequelize.BOOLEAN,
+                defaultValue: false
             },
             status: {
                 type: Sequelize.STRING

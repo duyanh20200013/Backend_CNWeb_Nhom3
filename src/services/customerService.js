@@ -1,4 +1,5 @@
 import db from '../models/index';
+import houseService from './houseService'
 
 // Xử lý Favourite House
 
@@ -231,7 +232,7 @@ let getAllContractOfCustomer = (customerId) => {
                     {
                         model: db.Review,
                         as: 'ReviewData',
-                        attributes: [star, description],
+                        attributes: ['star', 'description'],
                     },
                     {
                         model: db.House,
@@ -264,24 +265,18 @@ let getDatailContract = (contractId) => {
                     {
                         model: db.Review,
                         as: 'ReviewData',
-                        attributes: [star, description],
-                    },
-                    {
-                        model: db.House,
-                        as: 'houseContractData',
-                        attributes: {
-                            exclude: ['ownerId', 'createdAt', 'updatedAt'],
-                        },
+                        attributes: ['star', 'description'],
                     },
                 ],
                 raw: false,
                 nest: true
             })
-
+            let house = await houseService.getDetailHouseById(contract.houseId);
             resolve({
                 errCode: 0,
                 errMessage: 'Ok!',
-                data: contract
+                contract: contract,
+                house: house
             })
         } catch (e) {
             reject(e);
@@ -298,5 +293,6 @@ module.exports = {
     deleteFavouriteHouseByName: deleteFavouriteHouseByName,
     updateNameFavouriteList: updateNameFavouriteList,
     createContract: createContract,
-    getAllContractOfCustomer: getAllContractOfCustomer
+    getAllContractOfCustomer: getAllContractOfCustomer,
+    getDatailContract: getDatailContract
 }
