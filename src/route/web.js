@@ -40,9 +40,12 @@ let initWebRoutes = (app) => {
     //Xử lý Contract
     router.get('/api/partial-payment-contract', authToken, authRole(["Admin"]), amdinController.partialPaymentContract)
     router.get('/api/full-payment-contract', authToken, authRole(["Admin"]), amdinController.fullPaymentContract)
+    router.post('/api/cancel-contract', authToken, authRole(["Admin", "Owner", "Customer"]), amdinController.cancelContract)
+    router.post('/api/refund-contract', authToken, authRole(["Admin", "Owner", "Customer"]), amdinController.refundContract)
 
     router.get('/api/get-all-owner', authToken, authRole(["Admin"]), amdinController.getAllOwnerHouse)
     router.get('/api/get-all-customer', authToken, authRole(["Admin"]), amdinController.getAllCustomer)
+    router.get('/api/get-all-user', authToken, authRole(["Admin"]), amdinController.getAllUser)
 
     router.post('/api/create-favourite-house', authToken, authRole(["Customer"]), customerController.addFavouriteHouse)
     router.get('/api/get-all-name-favouriteList', authToken, authRole(["Customer"]), customerController.getAllNameListFavourite)
@@ -55,6 +58,13 @@ let initWebRoutes = (app) => {
     router.post('/api/create-contract', authToken, authRole(["Customer"]), customerController.createContract)
     router.get('/api/get-all-contract-of-customer', authToken, authRole(["Admin", "Customer"]), customerController.getAllContractOfCustomer)
     router.get('/api/get-contract-by-id', authToken, authRole(["Admin", "Customer"]), customerController.getDatailContract)
+    router.get('/api/end-contract', authToken, authRole(["Customer"]), customerController.endContract)
+
+    router.post('/api/create-review', authToken, authRole(["Customer"]), customerController.createReview)
+
+    router.get('/api/get-all-house-of-owner', ownerController.getAllHouseOfOwner)
+    router.get('/api/get-all-contract-of-house', authToken, authRole(["Admin", "Owner"]), ownerController.getAllContractOfHouse)
+    router.get('/api/get-all-contract-of-owner', authToken, authRole(["Admin", "Owner"]), ownerController.getAllContractOfOwner)
 
     router.post('/api/create-verify-infomation', authToken, authRole(["Owner"]), ownerController.createVerifyInfomation)
     router.post('/api/update-verify-infomation', authToken, authRole(["Owner"]), ownerController.updateVerifyInfomation)

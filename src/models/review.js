@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             Review.belongsTo(models.Contract, { foreignKey: 'contractId', targetKey: 'id', as: 'ReviewData' })
-            //District.hasMany(models.House, { foreignKey: 'districtCode', as: 'districtData' })
+            Review.belongsTo(models.House, { foreignKey: 'houseId', targetKey: 'id', as: 'houseReviewData' })
+            Review.belongsTo(models.User, { foreignKey: 'customerId', targetKey: 'id', as: 'userReviewData' })
         }
     };
     Review.init({

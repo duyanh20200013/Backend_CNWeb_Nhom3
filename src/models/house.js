@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
             House.hasMany(models.House_Convenient, { foreignKey: 'houseId', as: 'houseConvenientIdData' })
             House.hasMany(models.Favourite_House, { foreignKey: 'houseId', as: 'favouriteHouseData' })
             House.hasMany(models.Contract, { foreignKey: 'houseId', as: 'houseContractData' })
+            House.hasMany(models.Review, { foreignKey: 'houseId', as: 'houseReviewData' })
             House.hasOne(models.House_Info, { foreignKey: 'houseId' })
             House.hasOne(models.Update_House, { foreignKey: 'houseIdUpdate' })
         }

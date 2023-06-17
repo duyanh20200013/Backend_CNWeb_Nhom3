@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             Contract.belongsTo(models.House, { foreignKey: 'houseId', targetKey: 'id', as: 'houseContractData' })
             Contract.belongsTo(models.User, { foreignKey: 'customerId', targetKey: 'id', as: 'customerContractData' })
-            Contract.hasMany(models.Review, { foreignKey: 'contractId', as: 'ReviewData' })
+            Contract.hasOne(models.Review, { foreignKey: 'contractId', as: 'ReviewData' })
         }
     };
     Contract.init({
@@ -25,7 +25,8 @@ module.exports = (sequelize, DataTypes) => {
         numberUnder13: DataTypes.INTEGER,
         numberChildren: DataTypes.INTEGER,
         haveAnimals: DataTypes.BOOLEAN,
-        status: DataTypes.STRING
+        status: DataTypes.STRING,
+        cancelReason: DataTypes.TEXT('long'),
     }, {
         sequelize,
         modelName: 'Contract',

@@ -386,6 +386,65 @@ let fullPaymentContract = (contractId) => {
     })
 }
 
+let cancelContract = (contractId, cancelReason) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let contract = await db.Contract.findOne({
+                where: { id: contractId },
+                raw: false,
+
+            })
+            if (!contract) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Contract not found!',
+                })
+            } else {
+                contract.status = 'Huỷ';
+                contract.cancelReason = cancelReason;
+                await contract.save();
+                let data = await getDataForEmail(contract.customerId, contract.houseId, contractId);
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Huỷ thành công!',
+                    data: data
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let refundContract = (contractId, cancelReason) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let contract = await db.Contract.findOne({
+                where: { id: contractId },
+                raw: false,
+
+            })
+            if (!contract) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Contract not found!',
+                })
+            } else {
+                contract.status = 'Hoàn tiền';
+                contract.cancelReason = cancelReason;
+                await contract.save();
+                let data = await getDataForEmail(contract.customerId, contract.houseId, contractId);
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Hoàn tiền thành công!',
+                    data: data
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
 //Xử lý quản lý Owner,Customer
 
 let getAllOwnerHouse = () => {
@@ -448,6 +507,35 @@ let getAllCustomer = () => {
     })
 }
 
+let getAllUser = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let users = await db.User.findAll({
+                attributes: {
+                    exclude: ['refreshToken', 'resetToken', 'resetTokenExpiration', 'password'],
+                },
+                raw: false,
+            })
+            if (!users) {
+                resolve({
+                    errCode: 1,
+                    data: []
+                })
+            } else {
+                for (let user of users) {
+                    user.image = Buffer.from(user.image, 'base64').toString('binary')
+                }
+                resolve({
+                    errCode: 0,
+                    data: users
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     confirmCreateHouse: confirmCreateHouse,
     getAllHouseWaitCreate: getAllHouseWaitCreate,
@@ -457,6 +545,9 @@ module.exports = {
     rejectUpdateHouse: rejectUpdateHouse,
     getAllOwnerHouse: getAllOwnerHouse,
     getAllCustomer: getAllCustomer,
+    getAllUser: getAllUser,
     partialPaymentContract: partialPaymentContract,
-    fullPaymentContract: fullPaymentContract
+    fullPaymentContract: fullPaymentContract,
+    cancelContract: cancelContract,
+    refundContract: refundContract
 }

@@ -95,7 +95,7 @@ let createContract = async (req, res) => {
     let data = req.body.data
     let customerId = req.user.id
 
-    if (!data.houseId || !data.arriveDate || !data.leftDate || !data.price || !data.numberOver13 || !data.numberUnder13 || !data.numberChildren || data.haveAnimals == null) {
+    if (!data.houseId || !data.arriveDate || !data.leftDate || !data.price || data.numberOver13 == null || data.numberUnder13 == null || data.numberChildren == null || data.haveAnimals == null) {
         return res.status(500).json({
             errCode: 1,
             message: 'Missing inputs parameter!',
@@ -139,12 +139,51 @@ let getDatailContract = async (req, res) => {
         })
     }
     let message = await customerService.getDatailContract(contractId);
-    if (userRole === 'Admin' || (userRole === 'Customer' && message.contract.customerId == userId)) {
+    if (message.errCode === 0) {
+        if (userRole === 'Admin' || (userRole === 'Customer' && message.contract.customerId == userId)) {
+            return res.status(200).json(message)
+        }
+        return res.status(401).json({
+            message: "Access Denied - Unauthorized",
+        });
+    } else {
+        return res.status(300).json(message)
+    }
+}
+
+let endContract = async (req, res) => {
+    let contractId = req.query.contractId;
+    let userId = req.user.id;
+    if (!contractId) {
+        return res.status(500).json({
+            errCode: 1,
+            message: 'Missing inputs parameter!',
+        })
+    }
+    let data = await customerService.getDatailContract(contractId);
+    if (data.contract.customerId == userId) {
+        let message = await customerService.endContract(contractId);
+        delete message.contract;
         return res.status(200).json(message)
     }
     return res.status(401).json({
         message: "Access Denied - Unauthorized",
     });
+}
+
+//Xử lý Review
+let createReview = async (req, res) => {
+    let data = req.body.data
+    let customerId = req.user.id
+
+    if (!data.houseId || !data.contractId || !data.star) {
+        return res.status(500).json({
+            errCode: 1,
+            message: 'Missing inputs parameter!',
+        })
+    }
+    let message = await customerService.createReview(customerId, data);
+    return res.status(200).json(message)
 }
 
 module.exports = {
@@ -157,5 +196,7 @@ module.exports = {
     updateNameFavouriteList: updateNameFavouriteList,
     createContract: createContract,
     getAllContractOfCustomer: getAllContractOfCustomer,
-    getDatailContract: getDatailContract
+    getDatailContract: getDatailContract,
+    endContract: endContract,
+    createReview: createReview
 }

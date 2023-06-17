@@ -210,6 +210,26 @@ let getDetailHouseById = (inputId) => {
                 ],
                 raw: true
             })
+            let dataReview = await db.Review.findAll({
+                where: { houseId: inputId },
+                attributes: ['customerId', 'star', 'description'],
+                include: [
+                    {
+                        model: db.User,
+                        as: 'userReviewData',
+                        attributes: ['firstName', 'lastName', 'image']
+                    }
+                ],
+                raw: false,
+                nest: true
+            })
+            let dataContract = await db.Contract.findAll({
+                where: {
+                    houseId: inputId,
+                    [Op.or]: [{ status: 'Đang chờ xác nhận' }, { status: 'Đặt cọc' }, { status: 'Hoàn tất thanh toán' }, { status: 'Hoàn thành' }]
+                },
+                attributes: ['arriveDate', 'leftDate']
+            })
             let data = await db.House.findOne({
                 where: { id: inputId },
                 attributes: {
@@ -242,14 +262,6 @@ let getDetailHouseById = (inputId) => {
                         as: 'ownerData',
                         attributes: ['firstName', 'lastName', 'phone', 'address', 'image']
                     },
-                    {
-                        model: db.Contract,
-                        as: 'houseContractData',
-                        where: {
-                            [Op.or]: [{ status: 'Đang chờ xác nhận' }, { status: 'Đặt cọc' }, { status: 'Hoàn tất thanh toán' }]
-                        },
-                        attributes: ['arriveDate', 'leftDate']
-                    },
                 ],
                 raw: false,
                 nest: true
@@ -258,9 +270,16 @@ let getDetailHouseById = (inputId) => {
                 data.ownerData.image = Buffer.from(data.ownerData.image, 'base64').toString('binary')
             }
             if (!data) data = {};
+            if (dataReview) {
+                for (var review of dataReview) {
+                    review.userReviewData.image = Buffer.from(review.userReviewData.image, 'base64').toString('binary')
+                }
+            }
             resolve({
                 errCode: 0,
                 data: data,
+                dataContract: dataContract,
+                dataReview: dataReview,
                 dataType: dataType,
                 dataConvenient: dataConvenient
             })
@@ -281,7 +300,7 @@ let createHouse = (data) => {
                 name: data.name,
                 title: data.title,
                 price: data.price,
-                star: 5.0,
+                star: 0.0,
                 countReview: 0
             })
             let houseId = newHouse.id;
@@ -372,11 +391,9 @@ let deleteHouse = (houseId, userId, userRole) => {
                     await db.Contract.destroy({
                         where: { houseId: houseId }
                     })
-                    // Hoàn thiện khi viết xong con review
-
-                    // await db.Review.destroy({
-                    //     where: { houseId: houseId }
-                    // })
+                    await db.Review.destroy({
+                        where: { houseId: houseId }
+                    })
                     resolve({
                         errCode: 0,
                         errMessage: `Delete Successfully`
@@ -495,6 +512,9 @@ let searchHouse = (data) => {
                                 [Op.gte]: data.time.arriveDate,
                                 [Op.lte]: data.time.leftDate
                             }
+                        },
+                        status: {
+                            [Op.or]: ['Đang chờ xác nhận', 'Đặt cọc', 'Hoàn tất thanh toán', 'Hoàn thành']
                         }
                     },
                     attributes: ['houseId'],

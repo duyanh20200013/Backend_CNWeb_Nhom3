@@ -156,6 +156,11 @@ let getAllCustomer = async (req, res) => {
     return res.status(200).json(message);
 }
 
+let getAllUser = async (req, res) => {
+    let message = await adminService.getAllUser();
+    return res.status(200).json(message);
+}
+
 //Controller Contract
 let partialPaymentContract = async (req, res) => {
     let contractId = req.query.contractId
@@ -302,6 +307,174 @@ let fullPaymentContract = async (req, res) => {
     return res.status(200).json(message);
 }
 
+let cancelContract = async (req, res) => {
+    let contractId = req.body.contractId;
+    let cancelReason = req.body.cancelReason
+    let userId = req.user.id;
+    let userRole = req.user.role;
+    if (!contractId || !cancelReason) {
+        return res.status(500).json({
+            errCode: 1,
+            message: 'Missing inputs parameter!',
+        })
+    }
+    let message = await adminService.cancelContract(contractId, cancelReason);
+    if (message.errCode === 0) {
+        if (userRole === 'Admin' || (userRole === 'Owner' && userId == message.data.ownerData.id) || (userRole === 'Customer' && userId == message.data.customerData.id)) {
+            // Gửi mail cho khách về việc huỷ Hợp đồng
+            const msg = {
+                to: message.data.customerData.email,
+                from: process.env.SENDGRID_EMAIL,
+                subject: "Thông tin huỷ hợp đồng",
+                html: `
+                  <h1>Một hợp đồng của bạn đã được huỷ</h1>
+                  <h2>Thông tin hợp đồng</h2>
+                  <p>Căn nhà : ${message.data.contractData.house.data.name}</p>
+                  <p>Địa chỉ: ${message.data.contractData.house.data.House_Info.address}</p>
+                  <p>Thời gian: Từ ${message.data.contractData.contract.arriveDate} đến ${message.data.contractData.contract.leftDate} </p>
+                  <p>Giá: ${message.data.contractData.contract.price} VND</p>
+                  <p>Trạng thái: ${message.data.contractData.contract.status}</p>
+                  <h2>Thông tin chủ nhà</h2>
+                  <p>Họ tên chủ nhà : ${message.data.ownerData.lastName} ${message.data.ownerData.firstName}</p>
+                  <p>Số điện thoại : ${message.data.ownerData.phone}</p>
+                  <p>Email : ${message.data.ownerData.email}</p>
+                  <h2>Lý do huỷ : ${cancelReason}</h2>
+                  `,
+            }
+            sgMail
+                .send(msg)
+                .then(() => { }, error => {
+                    console.error(error);
+                    if (error.response) {
+                        console.error(error.response.body)
+                    }
+                });
+            // Gửi mail cho chủ nhà về thông tin của khách
+            const msg1 = {
+                to: message.data.ownerData.email,
+                from: process.env.SENDGRID_EMAIL,
+                subject: "Thông tin huỷ hợp đồng",
+                html: `
+                    <h1>Một hợp đồng của bạn đã được huỷ</h1>
+                    <h2>Thông tin hợp đồng</h2>
+                    <p>Căn nhà : ${message.data.contractData.house.data.name}</p>
+                    <p>Địa chỉ: ${message.data.contractData.house.data.House_Info.address}</p>
+                    <p>Thời gian: Từ ${message.data.contractData.contract.arriveDate} đến ${message.data.contractData.contract.leftDate} </p>
+                    <p>Giá: ${message.data.contractData.contract.price} VND</p>
+                    <p>Trạng thái: ${message.data.contractData.contract.status}</p>
+                    <h2>Thông tin khách đặt</h2>
+                    <p>Họ tên khách : ${message.data.customerData.lastName} ${message.data.customerData.firstName}</p>
+                    <p>Số điện thoại : ${message.data.customerData.phone}</p>
+                    <p>Email : ${message.data.customerData.email}</p>
+                    <h2>Lý do huỷ : ${cancelReason}</h2>
+                    `,
+            }
+            sgMail
+                .send(msg1)
+                .then(() => { }, error => {
+                    console.error(error);
+                    if (error.response) {
+                        console.error(error.response.body)
+                    }
+                });
+            delete message.data;
+            return res.status(200).json(message);
+        } else {
+            return res.status(401).json({
+                message: "Access Denied - Unauthorized",
+            });
+        }
+    } else {
+        return res.status(200).json(message);
+    }
+}
+
+let refundContract = async (req, res) => {
+    let contractId = req.body.contractId;
+    let cancelReason = req.body.cancelReason;
+    let userId = req.user.id;
+    let userRole = req.user.role;
+    if (!contractId || !cancelReason) {
+        return res.status(500).json({
+            errCode: 1,
+            message: 'Missing inputs parameter!',
+        })
+    }
+    let message = await adminService.refundContract(contractId, cancelReason);
+    if (message.errCode === 0) {
+        if ((userRole === 'Admin') || (userRole === 'Owner' && userId == message.data.ownerData.id) || (userRole === 'Customer' && userId == message.data.customerData.id)) {
+            // Gửi mail cho khách về việc huỷ Hợp đồng
+            const msg = {
+                to: message.data.customerData.email,
+                from: process.env.SENDGRID_EMAIL,
+                subject: "Thông tin huỷ hợp đồng",
+                html: `
+                  <h1>Một hợp đồng của bạn đã được huỷ</h1>
+                  <h2>Thông tin hợp đồng</h2>
+                  <p>Căn nhà : ${message.data.contractData.house.data.name}</p>
+                  <p>Địa chỉ: ${message.data.contractData.house.data.House_Info.address}</p>
+                  <p>Thời gian: Từ ${message.data.contractData.contract.arriveDate} đến ${message.data.contractData.contract.leftDate} </p>
+                  <p>Giá: ${message.data.contractData.contract.price} VND</p>
+                  <p>Trạng thái: ${message.data.contractData.contract.status}</p>
+                  <h2>Thông tin chủ nhà</h2>
+                  <p>Họ tên chủ nhà : ${message.data.ownerData.lastName} ${message.data.ownerData.firstName}</p>
+                  <p>Số điện thoại : ${message.data.ownerData.phone}</p>
+                  <p>Email : ${message.data.ownerData.email}</p>
+                  <h2>Lý do huỷ : ${cancelReason}</h2>
+                  <h2>Bạn sẽ nhận được tiền hoàn trả trong vòng 24h.</h2>
+                  <h2>Cảm ơn bạn vì đã sử dụng dịch vụ của chúng tôi</h2>
+                  `,
+            }
+            sgMail
+                .send(msg)
+                .then(() => { }, error => {
+                    console.error(error);
+                    if (error.response) {
+                        console.error(error.response.body)
+                    }
+                });
+            // Gửi mail cho chủ nhà về thông tin của khách
+            const msg1 = {
+                to: message.data.ownerData.email,
+                from: process.env.SENDGRID_EMAIL,
+                subject: "Thông tin huỷ hợp đồng",
+                html: `
+                    <h1>Một hợp đồng của bạn đã được huỷ</h1>
+                    <h2>Thông tin hợp đồng</h2>
+                    <p>Căn nhà : ${message.data.contractData.house.data.name}</p>
+                    <p>Địa chỉ: ${message.data.contractData.house.data.House_Info.address}</p>
+                    <p>Thời gian: Từ ${message.data.contractData.contract.arriveDate} đến ${message.data.contractData.contract.leftDate} </p>
+                    <p>Giá: ${message.data.contractData.contract.price} VND</p>
+                    <p>Trạng thái: ${message.data.contractData.contract.status}</p>
+                    <h2>Thông tin khách đặt</h2>
+                    <p>Họ tên khách : ${message.data.customerData.lastName} ${message.data.customerData.firstName}</p>
+                    <p>Số điện thoại : ${message.data.customerData.phone}</p>
+                    <p>Email : ${message.data.customerData.email}</p>
+                    <h2>Lý do huỷ : ${cancelReason}</h2>
+                    `,
+            }
+            sgMail
+                .send(msg1)
+                .then(() => { }, error => {
+                    console.error(error);
+                    if (error.response) {
+                        console.error(error.response.body)
+                    }
+                });
+            delete message.data;
+
+            return res.status(200).json(message);
+        } else {
+            return res.status(401).json({
+                message: "Access Denied - Unauthorized",
+            });
+        }
+    } else {
+        return res.status(400).json(message);
+    }
+
+}
+
 module.exports = {
     confirmCreateHouse: confirmCreateHouse,
     getAllHouseWaitCreate: getAllHouseWaitCreate,
@@ -311,6 +484,9 @@ module.exports = {
     rejectUpdateHouse: rejectUpdateHouse,
     getAllOwnerHouse: getAllOwnerHouse,
     getAllCustomer: getAllCustomer,
+    getAllUser: getAllUser,
     partialPaymentContract: partialPaymentContract,
-    fullPaymentContract: fullPaymentContract
+    fullPaymentContract: fullPaymentContract,
+    cancelContract: cancelContract,
+    refundContract: refundContract
 }

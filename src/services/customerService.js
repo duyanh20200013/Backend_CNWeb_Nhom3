@@ -267,16 +267,79 @@ let getDatailContract = (contractId) => {
                         as: 'ReviewData',
                         attributes: ['star', 'description'],
                     },
+                    {
+                        model: db.User,
+                        as: 'customerContractData',
+                        attributes: ['firstName', 'lastName', 'image', 'address', 'phone', 'email'],
+                    },
                 ],
                 raw: false,
                 nest: true
             })
-            let house = await houseService.getDetailHouseById(contract.houseId);
+            if (contract) {
+                contract.customerContractData.image = Buffer.from(contract.customerContractData.image, 'base64').toString('binary')
+                let house = await houseService.getDetailHouseById(contract.houseId);
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Ok!',
+                    contract: contract,
+                    house: house
+                })
+            } else {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Contract not found'
+                })
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+let endContract = (contractId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let contract = await db.Contract.findOne({
+                where: { id: contractId },
+                raw: false,
+            })
+            contract.status = 'Hoàn thành'
+            await contract.save();
             resolve({
                 errCode: 0,
                 errMessage: 'Ok!',
-                contract: contract,
-                house: house
+                contract: contract
+            })
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+//Xử lý Review
+let createReview = (customerId, data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await db.Review.create({
+                customerId: customerId,
+                houseId: data.houseId,
+                contractId: data.contractId,
+                star: data.star,
+                description: data.description,
+            })
+            let house = await db.House.findOne({
+                where: { id: data.houseId },
+                raw: false
+            })
+            //Cập nhật star và countReview
+            let star = house.star;
+            house.countReview = house.countReview + 1;
+            house.star = (star + data.star) / (house.countReview);
+            await house.save();
+            resolve({
+                errCode: 0,
+                errMessage: 'Create Review Successfully!'
             })
         } catch (e) {
             reject(e);
@@ -294,5 +357,7 @@ module.exports = {
     updateNameFavouriteList: updateNameFavouriteList,
     createContract: createContract,
     getAllContractOfCustomer: getAllContractOfCustomer,
-    getDatailContract: getDatailContract
+    getDatailContract: getDatailContract,
+    endContract: endContract,
+    createReview: createReview
 }

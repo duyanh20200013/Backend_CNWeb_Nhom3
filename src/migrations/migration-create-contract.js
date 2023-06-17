@@ -43,6 +43,10 @@ module.exports = {
             status: {
                 type: Sequelize.STRING
             },
+            cancelReason: {
+                allowNull: true,
+                type: Sequelize.TEXT('long')
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE

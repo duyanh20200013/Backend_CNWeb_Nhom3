@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
             User.hasMany(models.House, { foreignKey: 'ownerId', targetKey: 'id', as: 'ownerData' })
             User.hasMany(models.Contract, { foreignKey: 'customerId', as: 'customerContractData' })
             User.hasOne(models.Verify_Infomation_Owner, { foreignKey: 'ownerId' })
-            // User.hasMany(models.Schedule, { foreignKey: 'timeType', as: 'timeTypeData' })
+            User.hasMany(models.Review, { foreignKey: 'customerId', as: 'userReviewData' })
         }
     };
     User.init({
