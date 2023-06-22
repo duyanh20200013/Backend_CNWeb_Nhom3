@@ -15,10 +15,12 @@ let getAllProvince = () => {
     })
 }
 
-let getAllDistrict = () => {
+let getAllDistrictOfProvince = (provinceCode) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let districts = await db.District.findAll()
+            let districts = await db.District.findAll({
+                where: { provinceCode: provinceCode }
+            })
             resolve({
                 errCode: 0,
                 data: districts
@@ -212,7 +214,7 @@ let getDetailHouseById = (inputId) => {
             })
             let dataReview = await db.Review.findAll({
                 where: { houseId: inputId },
-                attributes: ['customerId', 'star', 'description'],
+                attributes: ['customerId', 'star', 'description', 'createdAt', 'updatedAt'],
                 include: [
                     {
                         model: db.User,
@@ -233,7 +235,7 @@ let getDetailHouseById = (inputId) => {
             let data = await db.House.findOne({
                 where: { id: inputId },
                 attributes: {
-                    exclude: ['provinceCode', 'districtCode', 'ownerId'],
+                    exclude: ['provinceCode', 'districtCode'],
                 },
                 include: [
                     {
@@ -496,6 +498,7 @@ let searchHouse = (data) => {
             let typeObject = {};
             let provinceObject = {};
             let districtObject = {};
+            let priceArray = [0, 10000000];
 
             //Hoàn thiện phần check thời gian sau khi làm xong ContractService
             //Tìm list nhà bị trùng lịch không thể đặt
@@ -580,10 +583,14 @@ let searchHouse = (data) => {
             if (data.districtCode) {
                 districtObject = { code: data.districtCode }
             }
+            //Check điều kiện Price
+            if (data.minPrice && data.maxPrice) {
+                priceArray = [data.minPrice, data.maxPrice]
+            }
             let house = await db.House.findAll({
                 where: {
                     price: {
-                        [Op.between]: [data.minPrice, data.maxPrice]
+                        [Op.between]: priceArray
                     },
                     status: 'Active'
                 },
@@ -655,7 +662,7 @@ let searchHouse = (data) => {
 
 module.exports = {
     getAllProvince: getAllProvince,
-    getAllDistrict: getAllDistrict,
+    getAllDistrictOfProvince: getAllDistrictOfProvince,
     getAllHouseOfType: getAllHouseOfType,
     getAllTypes: getAllTypes,
     getAllConvenients: getAllConvenients,

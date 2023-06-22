@@ -140,7 +140,7 @@ let getDatailContract = async (req, res) => {
     }
     let message = await customerService.getDatailContract(contractId);
     if (message.errCode === 0) {
-        if (userRole === 'Admin' || (userRole === 'Customer' && message.contract.customerId == userId)) {
+        if ((userRole === 'Admin') || (userRole === 'Customer' && message.contract.customerId == userId) || (userRole === 'Owner' && message.house.data.ownerId == userId)) {
             return res.status(200).json(message)
         }
         return res.status(401).json({

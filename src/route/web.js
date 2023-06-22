@@ -10,7 +10,7 @@ let router = express.Router();
 
 let initWebRoutes = (app) => {
     router.get('/api/all-province', houseController.getAllProvince);
-    router.get('/api/all-district', houseController.getAllDistrict);
+    router.get('/api/all-district-of-province', houseController.getAllDistrictOfProvince);
     router.get('/api/alltype', houseController.getAllTypes);
     router.get('/api/all-house-of-type', houseController.getAllHouseOfType);
     router.get('/api/allconvenient', houseController.getAllConvenients);
@@ -57,7 +57,7 @@ let initWebRoutes = (app) => {
 
     router.post('/api/create-contract', authToken, authRole(["Customer"]), customerController.createContract)
     router.get('/api/get-all-contract-of-customer', authToken, authRole(["Admin", "Customer"]), customerController.getAllContractOfCustomer)
-    router.get('/api/get-contract-by-id', authToken, authRole(["Admin", "Customer"]), customerController.getDatailContract)
+    router.get('/api/get-contract-by-id', authToken, authRole(["Admin", "Customer", "Owner"]), customerController.getDatailContract)
     router.get('/api/end-contract', authToken, authRole(["Customer"]), customerController.endContract)
 
     router.post('/api/create-review', authToken, authRole(["Customer"]), customerController.createReview)

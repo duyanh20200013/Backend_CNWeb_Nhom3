@@ -13,9 +13,10 @@ let getAllProvince = async (req, res) => {
     }
 }
 
-let getAllDistrict = async (req, res) => {
+let getAllDistrictOfProvince = async (req, res) => {
     try {
-        let types = await houseService.getAllDistrict()
+        let provinceCode = req.query.provinceCode
+        let types = await houseService.getAllDistrictOfProvince(provinceCode)
         return res.status(200).json(types)
     } catch (e) {
         console.log(e)
@@ -164,7 +165,7 @@ let searchHouse = async (req, res) => {
 
 module.exports = {
     getAllProvince: getAllProvince,
-    getAllDistrict: getAllDistrict,
+    getAllDistrictOfProvince: getAllDistrictOfProvince,
     getAllTypes: getAllTypes,
     getAllHouseOfType: getAllHouseOfType,
     getAllConvenients: getAllConvenients,
