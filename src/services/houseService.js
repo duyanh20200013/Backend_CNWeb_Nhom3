@@ -553,7 +553,9 @@ let searchHouse = (data) => {
                     houseInfoObject.countBedRoom = data.countBedRoom
                 }
             }
-            houseInfoObject.maxGuests = { [Op.gte]: data.guest, }
+            if (data.guest) {
+                houseInfoObject.maxGuests = { [Op.gte]: data.guest, }
+            }
             if (data.allowAnimals == false) {
                 houseInfoObject.allowAnimals = false
             }
